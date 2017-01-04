@@ -6,7 +6,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.HeadersExchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -51,7 +50,7 @@ public class RabbitConfiguration
     }
 
     @Bean
-    RabbitTemplate testRabbitTemplate()
+    public RabbitTemplate testRabbitTemplate()
     {
         RabbitTemplate rabbitTemplate = new RabbitTemplate();
         rabbitTemplate.setConnectionFactory(connectionFactory);
@@ -65,7 +64,8 @@ public class RabbitConfiguration
     public Queue testQueue()
     {
         Map<String, Object> arguments = new HashMap<>();
-        arguments.put("x-dead-letter-exchange", "com.itelg.spring.rabbitmq.dlx");
+        arguments.put("x-dead-letter-exchange", "");
+        arguments.put("x-dead-letter-routing-key", "com.itelg.spring.rabbitmq.test.dlx");
         Queue queue = new Queue("com.itelg.spring.rabbitmq.test", true, false, false, arguments);
         rabbitAdmin().declareQueue(queue);
         rabbitAdmin().declareBinding(BindingBuilder.bind(queue).to(testExchange()).with("test"));
@@ -92,19 +92,18 @@ public class RabbitConfiguration
     }
 
     @Bean
-    public HeadersExchange testDlxExchange()
-    {
-        HeadersExchange exchange = new HeadersExchange("com.itelg.spring.rabbitmq.dlx");
-        rabbitAdmin().declareExchange(exchange);
-        return exchange;
-    }
-
-    @Bean
     public Queue testDlxQueue()
     {
         Queue queue = new Queue("com.itelg.spring.rabbitmq.test.dlx");
         rabbitAdmin().declareQueue(queue);
-        rabbitAdmin().declareBinding(BindingBuilder.bind(queue).to(testDlxExchange()).where("x-death-queue").matches("com.itelg.spring.rabbitmq.test"));
+        return queue;
+    }
+
+    @Bean
+    public Queue test2DlxQueue()
+    {
+        Queue queue = new Queue("com.itelg.spring.rabbitmq.test2.dlx");
+        rabbitAdmin().declareQueue(queue);
         return queue;
     }
 }
