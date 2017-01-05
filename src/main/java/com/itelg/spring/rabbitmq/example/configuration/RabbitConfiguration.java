@@ -19,9 +19,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.ErrorHandler;
 
+import com.itelg.spring.actuator.rabbitmq.metric.configuration.EnableRabbitMetrics;
 import com.itelg.spring.rabbitmq.example.listener.MessageListener;
 
 @Configuration
+@EnableRabbitMetrics
 public class RabbitConfiguration
 {
     private static final Logger log = LoggerFactory.getLogger(RabbitConfiguration.class);
@@ -67,6 +69,7 @@ public class RabbitConfiguration
         arguments.put("x-dead-letter-exchange", "");
         arguments.put("x-dead-letter-routing-key", "com.itelg.spring.rabbitmq.test.dlx");
         Queue queue = new Queue("com.itelg.spring.rabbitmq.test", true, false, false, arguments);
+        queue.setAdminsThatShouldDeclare(rabbitAdmin());
         rabbitAdmin().declareQueue(queue);
         rabbitAdmin().declareBinding(BindingBuilder.bind(queue).to(testExchange()).with("test"));
         return queue;
@@ -95,6 +98,7 @@ public class RabbitConfiguration
     public Queue testDlxQueue()
     {
         Queue queue = new Queue("com.itelg.spring.rabbitmq.test.dlx");
+        queue.setAdminsThatShouldDeclare(rabbitAdmin());
         rabbitAdmin().declareQueue(queue);
         return queue;
     }
@@ -103,6 +107,7 @@ public class RabbitConfiguration
     public Queue test2DlxQueue()
     {
         Queue queue = new Queue("com.itelg.spring.rabbitmq.test2.dlx");
+        queue.setAdminsThatShouldDeclare(rabbitAdmin());
         rabbitAdmin().declareQueue(queue);
         return queue;
     }
