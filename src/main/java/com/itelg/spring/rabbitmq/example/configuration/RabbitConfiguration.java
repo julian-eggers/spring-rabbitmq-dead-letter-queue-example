@@ -6,6 +6,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageListener;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -20,7 +22,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.util.ErrorHandler;
 
 import com.itelg.spring.actuator.rabbitmq.metric.configuration.EnableRabbitMetrics;
-import com.itelg.spring.rabbitmq.example.listener.MessageListener;
 
 @Configuration
 @EnableRabbitMetrics
@@ -44,39 +45,53 @@ public class RabbitConfiguration
     }
 
     @Bean
-    public TopicExchange testExchange()
+    public TopicExchange dlxExampleExchange()
     {
-        TopicExchange exchange = new TopicExchange("com.itelg.spring.rabbitmq");
+        TopicExchange exchange = new TopicExchange("dlx-example-exchange");
         rabbitAdmin().declareExchange(exchange);
         return exchange;
     }
 
+    /**
+     * SIMPLE
+     */
     @Bean
-    public RabbitTemplate testRabbitTemplate()
+    public RabbitTemplate simpleRabbitTemplate()
     {
         RabbitTemplate rabbitTemplate = new RabbitTemplate();
         rabbitTemplate.setConnectionFactory(connectionFactory);
         rabbitTemplate.setMessageConverter(messageConverter());
-        rabbitTemplate.setExchange("com.itelg.spring.rabbitmq");
-        rabbitTemplate.setRoutingKey("test");
+        rabbitTemplate.setExchange("dlx-example-exchange");
+        rabbitTemplate.setRoutingKey("simple");
         return rabbitTemplate;
     }
 
     @Bean
-    public Queue testQueue()
+    public Queue simpleQueue()
     {
         Map<String, Object> arguments = new HashMap<>();
         arguments.put("x-dead-letter-exchange", "");
-        arguments.put("x-dead-letter-routing-key", "com.itelg.spring.rabbitmq.test.dlx");
-        Queue queue = new Queue("com.itelg.spring.rabbitmq.test", true, false, false, arguments);
+        arguments.put("x-dead-letter-routing-key", "dlx-example-simple-queue-dlx");
+        Queue queue = new Queue("dlx-example-simple-queue", true, false, false, arguments);
         queue.setAdminsThatShouldDeclare(rabbitAdmin());
         rabbitAdmin().declareQueue(queue);
-        rabbitAdmin().declareBinding(BindingBuilder.bind(queue).to(testExchange()).with("test"));
+        rabbitAdmin().declareBinding(BindingBuilder.bind(queue).to(dlxExampleExchange()).with("simple"));
         return queue;
     }
 
     @Bean
-    public SimpleMessageListenerContainer testInboundContainer()
+    public Queue simpleQueueDlx()
+    {
+        Map<String, Object> arguments = new HashMap<>();
+        arguments.put("x-queue-mode", "lazy");
+        Queue queue = new Queue("dlx-example-simple-queue-dlx", true, false, false, arguments);
+        queue.setAdminsThatShouldDeclare(rabbitAdmin());
+        rabbitAdmin().declareQueue(queue);
+        return queue;
+    }
+
+    @Bean
+    public SimpleMessageListenerContainer simpleInboundContainer()
     {
         SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
@@ -86,29 +101,18 @@ public class RabbitConfiguration
             @Override
             public void handleError(Throwable throwable)
             {
-                log.info("Listener failed - message rerouted to dlx (Queue: com.itelg.spring.rabbitmq.test.dlx)");
+                log.info("Listener failed - message rerouted to dlx (Queue: dlx-example-simple-queue-dlx)");
             }
         });
-        container.setQueueNames("com.itelg.spring.rabbitmq.test");
-        container.setMessageListener(new MessageListener());
+        container.setQueueNames("dlx-example-simple-queue");
+        container.setMessageListener(new MessageListener()
+        {
+            @Override
+            public void onMessage(Message arg0)
+            {
+                throw new RuntimeException("Processing failed...");
+            }
+        });
         return container;
-    }
-
-    @Bean
-    public Queue testDlxQueue()
-    {
-        Queue queue = new Queue("com.itelg.spring.rabbitmq.test.dlx");
-        queue.setAdminsThatShouldDeclare(rabbitAdmin());
-        rabbitAdmin().declareQueue(queue);
-        return queue;
-    }
-
-    @Bean
-    public Queue test2DlxQueue()
-    {
-        Queue queue = new Queue("com.itelg.spring.rabbitmq.test2.dlx");
-        queue.setAdminsThatShouldDeclare(rabbitAdmin());
-        rabbitAdmin().declareQueue(queue);
-        return queue;
     }
 }
