@@ -23,3 +23,14 @@ This is different to the [rabbitmq-concept](https://www.rabbitmq.com/dlx.html) w
 ## Docker Example
 Run the following command to start a container which creates example-queues and sends messages to them.
 It tries to connect to a rabbitmq-server on localhost with username "guest" and password "guest".
+
+```
+docker run \
+-d \
+--name=spring-rabbitmq-dead-letter-queue-example \
+--restart=always \
+jeggers/spring-rabbitmq-dead-letter-queue-example:latest \
+--spring.rabbitmq.addresses=localhost \
+--spring.rabbitmq.username=guest \
+--spring.rabbitmq.password=guest
+```
