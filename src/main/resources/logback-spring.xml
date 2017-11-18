@@ -4,6 +4,7 @@
   <jmxConfigurator />
   <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter" />
   <conversionRule conversionWord="wex" converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter" />
+  <springProperty name="rootLevel" source="logging.level.root" />
 
   <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
@@ -12,18 +13,15 @@
     </encoder>
   </appender>
 
-  <root level="DEBUG">
+  <root level="${rootLevel}">
     <appender-ref ref="CONSOLE" />
   </root>
 
   <logger name="jndi" level="WARN" />
   <logger name="org.springframework" level="WARN" />
-  <logger name="org.hibernate" level="WARN" />
-  <logger name="org.jboss" level="WARN" />
-  <logger name="org.zkoss" level="WARN" />
-  <logger name="net.sf" level="WARN" />
-  <logger name="javax.management" level="WARN" />
-  <logger name="org.xnio" level="WARN" />
-  <logger name="io.undertow" level="WARN" />
   <logger name="org.apache" level="WARN" />
+  <logger name="org.xnio" level="WARN" />
+  <logger name="org.hibernate" level="WARN" />
+  <logger name="io.undertow" level="WARN" />
+  <logger name="org.jboss" level="WARN" />
 </configuration>

@@ -22,8 +22,7 @@ public class SchedulingConfiguration
     @Scheduled(fixedDelay = 5000, initialDelay = 5000)
     public void publish()
     {
-        Message message = new Message();
-        testRabbitTemplate.convertAndSend(message);
-        log.info("Message published (Queue: com.itelg.spring.rabbitmq.test)");
+        testRabbitTemplate.convertAndSend(new Message());
+        log.info("Message published (Queue: dlq-example-simple-queue)");
     }
 }
