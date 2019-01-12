@@ -28,7 +28,6 @@ It tries to connect to a rabbitmq-server on localhost with username "guest" and 
 docker run \
 -d \
 --name=spring-rabbitmq-dead-letter-queue-example \
---restart=always \
 jeggers/spring-rabbitmq-dead-letter-queue-example:latest \
 --spring.rabbitmq.addresses=localhost \
 --spring.rabbitmq.username=guest \

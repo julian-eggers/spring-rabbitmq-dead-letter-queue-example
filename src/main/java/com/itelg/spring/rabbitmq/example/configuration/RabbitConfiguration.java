@@ -16,9 +16,11 @@ import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.itelg.spring.actuator.rabbitmq.health.RabbitQueueCheckHealthIndicator;
 import com.itelg.spring.actuator.rabbitmq.metric.configuration.EnableRabbitMetrics;
 
 @Configuration
@@ -101,5 +103,14 @@ public class RabbitConfiguration
             throw new RuntimeException("Processing failed...");
         });
         return container;
+    }
+
+    @Bean
+    public HealthIndicator rabbitQueueCheckHealthIndicator()
+    {
+        RabbitQueueCheckHealthIndicator healthIndicator = new RabbitQueueCheckHealthIndicator();
+        healthIndicator.addQueueCheck(simpleQueue(), 1000, 1);
+        healthIndicator.addQueueCheck(simpleQueueDlx(), 1, 0);
+        return healthIndicator;
     }
 }
