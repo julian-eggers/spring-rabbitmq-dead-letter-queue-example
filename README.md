@@ -19,7 +19,6 @@ This is different to the [rabbitmq-concept](https://www.rabbitmq.com/dlx.html) w
 - x-queue-mode=lazy
 
 
-
 ## Docker Example
 Run the following command to start a container which creates example-queues and sends messages to them.
 It tries to connect to a rabbitmq-server on localhost with username "guest" and password "guest".
@@ -28,9 +27,26 @@ It tries to connect to a rabbitmq-server on localhost with username "guest" and 
 docker run \
 -d \
 --name=spring-rabbitmq-dead-letter-queue-example \
---restart=always \
+-p 8080:8080 \
 jeggers/spring-rabbitmq-dead-letter-queue-example:latest \
 --spring.rabbitmq.addresses=localhost \
 --spring.rabbitmq.username=guest \
 --spring.rabbitmq.password=guest
+```
+
+### Endpoints to check the result
+- http://localhost:8080/actuator/prometheus
+- http://localhost:8080/actuator/health
+
+
+## Build & Release
+
+### Build
+```
+mvn clean package dockerfile:build
+```
+
+### Release
+```
+mvn clean package dockerfile:build dockerfile:tag@tag-latest dockerfile:tag@tag-version dockerfile:push@push-latest dockerfile:push@push-version github-release:release
 ```
